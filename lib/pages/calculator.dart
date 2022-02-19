@@ -13,6 +13,7 @@ class CalculatorPage extends StatefulWidget {
 class CalculatorPageState extends State<CalculatorPage> {
   int step = 1;
   Map<int, Widget Function()> viewByStep = {};
+  Map<String, TextEditingController> controllers = {};
 
   CalculatorPageState() {
     viewByStep = {
@@ -21,8 +22,13 @@ class CalculatorPageState extends State<CalculatorPage> {
       3: _stepThreeGapSize,
       4: _stepFourTotal
     };
+    controllers['roomWidth'] = TextEditingController();
+    controllers['roomLength'] = TextEditingController();
+    controllers['tileWidth'] = TextEditingController();
+    controllers['tileLength'] = TextEditingController();
+    controllers['gapSize'] = TextEditingController();
   }
-
+  final _formKey = GlobalKey<FormState>();
   final EdgeInsets _pagePadding = const EdgeInsets.only(left: 20, right: 20);
 
   @override
@@ -30,7 +36,9 @@ class CalculatorPageState extends State<CalculatorPage> {
     var currentStep = viewByStep[step]!;
 
     return Scaffold(
-      body: Container(padding: _pagePadding, child: currentStep()),
+      body: Form(
+          key: _formKey,
+          child: Container(padding: _pagePadding, child: currentStep())),
     );
   }
 
@@ -61,9 +69,17 @@ class CalculatorPageState extends State<CalculatorPage> {
       children: [
         Text("Step: $step"),
         TextFormField(
+          key: Key("roomWidth"),
+          controller: controllers["roomWidth"],
+          validator: _requiredInt,
+          keyboardType: TextInputType.number,
           decoration: InputDecoration(label: Text("Room Width")),
         ),
         TextFormField(
+          key: Key("roomLength"),
+          controller: controllers["roomLength"],
+          validator: _requiredInt,
+          keyboardType: TextInputType.number,
           decoration: InputDecoration(label: Text("Room Length")),
         ),
         _renderButtonRows()
@@ -76,9 +92,17 @@ class CalculatorPageState extends State<CalculatorPage> {
       children: [
         Text("Step: $step"),
         TextFormField(
+          key: Key("tileWidth"),
+          controller: controllers["tileWidth"],
+          validator: _requiredInt,
+          keyboardType: TextInputType.number,
           decoration: InputDecoration(label: Text("Tile Width")),
         ),
         TextFormField(
+          key: Key("tileLength"),
+          controller: controllers["tileLength"],
+          validator: _requiredInt,
+          keyboardType: TextInputType.number,
           decoration: InputDecoration(label: Text("Tile Length")),
         ),
         _renderButtonRows()
@@ -91,6 +115,10 @@ class CalculatorPageState extends State<CalculatorPage> {
       children: [
         Text("Step: $step"),
         TextFormField(
+          key: Key("gapSize"),
+          controller: controllers["gapSize"],
+          validator: _requiredInt,
+          keyboardType: TextInputType.number,
           decoration: InputDecoration(label: Text("Gap Width")),
         ),
         _renderButtonRows()
@@ -99,11 +127,25 @@ class CalculatorPageState extends State<CalculatorPage> {
   }
 
   Widget _stepFourTotal() {
+    String roomSize =
+        "${controllers["roomWidth"]?.text} x ${controllers["roomLength"]?.text}";
+
+    int roomSizeTotal =
+        (int.tryParse(controllers["roomWidth"]?.text ?? "0") ?? 0) *
+            (int.tryParse(controllers["roomLength"]?.text ?? "0") ?? 0);
+
+    int tileSizeTotal =
+        (int.tryParse(controllers["tileWidth"]?.text ?? "0") ?? 0) *
+            (int.tryParse(controllers["tileLength"]?.text ?? "0") ?? 0);
+
+    String tileSize =
+        "${controllers["tileWidth"]?.text} x ${controllers["tileLength"]?.text}";
+
     return Column(
       children: [
-        _row("RoomArea", "2.5m x 2m", "5m2"),
-        _row("TileSize", "37cm x 37 cm", "5m2"),
-        _row("Gap", "", "8mm"),
+        _row("Room Area", roomSize, "${roomSizeTotal}m2"),
+        _row("Tile Size", tileSize, "${tileSizeTotal}m2"),
+        _row("Gap", "", "${controllers["gapSize"]?.text ?? "0"}mm"),
         _renderButtonRows()
       ],
     );
@@ -147,6 +189,14 @@ class CalculatorPageState extends State<CalculatorPage> {
 
   goToStep(int nextStep) {
     return () {
+      if (nextStep > step) {
+        var valid = _formKey.currentState?.validate();
+
+        if (valid == null || !valid) {
+          return;
+        }
+      }
+
       setState(() {
         step = max(1, min(4, nextStep));
       });
@@ -165,5 +215,13 @@ class CalculatorPageState extends State<CalculatorPage> {
     setState(() {
       step = 1;
     });
+  }
+
+  String? _requiredInt(String? inputValue) {
+    if (inputValue == null || inputValue.isEmpty) {
+      return "Please enter correct dimentions";
+    }
+
+    return null;
   }
 }
