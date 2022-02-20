@@ -14,6 +14,7 @@ class CalculatorPageState extends State<CalculatorPage> {
   int step = 1;
   Map<int, Widget Function()> viewByStep = {};
   Map<String, TextEditingController> controllers = {};
+  Map<String, String?> textErrors = {};
 
   CalculatorPageState() {
     viewByStep = {
@@ -38,7 +39,17 @@ class CalculatorPageState extends State<CalculatorPage> {
     return Scaffold(
       body: Form(
           key: _formKey,
-          child: Container(padding: _pagePadding, child: currentStep())),
+          child: Container(
+              padding: _pagePadding,
+              child: IndexedStack(
+                index: step - 1,
+                children: [
+                  viewByStep[1]!(),
+                  viewByStep[2]!(),
+                  viewByStep[3]!(),
+                  viewByStep[4]!()
+                ],
+              ))),
     );
   }
 
@@ -67,20 +78,23 @@ class CalculatorPageState extends State<CalculatorPage> {
   Widget _stepOneRoomSize() {
     return Column(
       children: [
-        Text("Step: $step"),
+        const SizedBox(height: 80),
         TextFormField(
           key: Key("roomWidth"),
           controller: controllers["roomWidth"],
           validator: _requiredInt,
           keyboardType: TextInputType.number,
-          decoration: InputDecoration(label: Text("Room Width")),
+          decoration: InputDecoration(
+              label: Text("Room Width"), errorText: getErrorText("roomWidth")),
         ),
         TextFormField(
           key: Key("roomLength"),
           controller: controllers["roomLength"],
           validator: _requiredInt,
           keyboardType: TextInputType.number,
-          decoration: InputDecoration(label: Text("Room Length")),
+          decoration: InputDecoration(
+              label: Text("Room Length"),
+              errorText: getErrorText("roomLength")),
         ),
         _renderButtonRows()
       ],
@@ -90,20 +104,23 @@ class CalculatorPageState extends State<CalculatorPage> {
   Widget _stepTwoTileSize() {
     return Column(
       children: [
-        Text("Step: $step"),
+        const SizedBox(height: 80),
         TextFormField(
           key: Key("tileWidth"),
           controller: controllers["tileWidth"],
           validator: _requiredInt,
           keyboardType: TextInputType.number,
-          decoration: InputDecoration(label: Text("Tile Width")),
+          decoration: InputDecoration(
+              label: Text("Tile Width"), errorText: getErrorText("tileWidth")),
         ),
         TextFormField(
           key: Key("tileLength"),
           controller: controllers["tileLength"],
           validator: _requiredInt,
           keyboardType: TextInputType.number,
-          decoration: InputDecoration(label: Text("Tile Length")),
+          decoration: InputDecoration(
+              label: Text("Tile Length"),
+              errorText: getErrorText("tileLength")),
         ),
         _renderButtonRows()
       ],
@@ -113,13 +130,14 @@ class CalculatorPageState extends State<CalculatorPage> {
   Widget _stepThreeGapSize() {
     return Column(
       children: [
-        Text("Step: $step"),
+        const SizedBox(height: 80),
         TextFormField(
           key: Key("gapSize"),
           controller: controllers["gapSize"],
           validator: _requiredInt,
           keyboardType: TextInputType.number,
-          decoration: InputDecoration(label: Text("Gap Width")),
+          decoration: InputDecoration(
+              label: Text("Gap Width"), errorText: getErrorText("gapSize")),
         ),
         _renderButtonRows()
       ],
@@ -143,12 +161,19 @@ class CalculatorPageState extends State<CalculatorPage> {
 
     return Column(
       children: [
+        const SizedBox(height: 80),
         _row("Room Area", roomSize, "${roomSizeTotal}m2"),
+        const SizedBox(height: 20),
         _row("Tile Size", tileSize, "${tileSizeTotal}m2"),
+        const SizedBox(height: 20),
         _row("Gap", "", "${controllers["gapSize"]?.text ?? "0"}mm"),
         _renderButtonRows()
       ],
     );
+  }
+
+  String? getErrorText(String controllerKey) {
+    return textErrors[controllerKey];
   }
 
   _renderButtonRows() {
@@ -163,7 +188,7 @@ class CalculatorPageState extends State<CalculatorPage> {
       return Row(
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
-          ElevatedButton(onPressed: goToNext(), child: Text("Next ${step + 1}"))
+          TextButton(onPressed: goToNext(), child: Text("Next ${step + 1}"))
         ],
       );
     }
@@ -172,8 +197,8 @@ class CalculatorPageState extends State<CalculatorPage> {
       return Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          ElevatedButton(onPressed: goToStep(1), child: const Text("New")),
-          ElevatedButton(onPressed: goToStep(4), child: const Text("Save"))
+          TextButton(onPressed: startNew, child: const Text("New")),
+          TextButton(onPressed: goToPrev(), child: const Text("Save"))
         ],
       );
     }
@@ -181,24 +206,43 @@ class CalculatorPageState extends State<CalculatorPage> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        ElevatedButton(onPressed: goToPrev(), child: const Text('Back')),
-        ElevatedButton(onPressed: goToNext(), child: const Text("Next")),
+        TextButton(onPressed: goToPrev(), child: const Text('Back')),
+        TextButton(onPressed: goToNext(), child: const Text("Next")),
       ],
     );
   }
 
   goToStep(int nextStep) {
     return () {
-      if (nextStep > step) {
-        var valid = _formKey.currentState?.validate();
-
-        if (valid == null || !valid) {
-          return;
-        }
-      }
-
       setState(() {
-        step = max(1, min(4, nextStep));
+        bool hasError = false;
+
+        if (step == 1 && nextStep > step) {
+          textErrors["roomWidth"] =
+              _requiredInt(controllers["roomWidth"]?.text);
+          textErrors["roomLength"] =
+              _requiredInt(controllers["roomLength"]?.text);
+
+          hasError = textErrors["roomWidth"] != null ||
+              textErrors["roomLength"] != null;
+        }
+        if (step == 2 && nextStep > step) {
+          textErrors["tileWidth"] =
+              _requiredInt(controllers["tileWidth"]?.text);
+          textErrors["tileLength"] =
+              _requiredInt(controllers["tileLength"]?.text);
+
+          hasError = textErrors["tileWidth"] != null ||
+              textErrors["tileLength"] != null;
+        }
+        if (step == 3 && nextStep > step) {
+          textErrors["gapSize"] = _requiredInt(controllers["gapSize"]?.text);
+          hasError = textErrors["gapSize"] != null;
+        }
+
+        if (!hasError) {
+          step = max(1, min(4, nextStep));
+        }
       });
     };
   }
@@ -212,13 +256,16 @@ class CalculatorPageState extends State<CalculatorPage> {
   }
 
   startNew() {
+    controllers.forEach((key, controller) {
+      controller.clear();
+    });
     setState(() {
       step = 1;
     });
   }
 
   String? _requiredInt(String? inputValue) {
-    if (inputValue == null || inputValue.isEmpty) {
+    if (inputValue?.isEmpty == true) {
       return "Please enter correct dimentions";
     }
 
