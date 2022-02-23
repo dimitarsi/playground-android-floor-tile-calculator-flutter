@@ -1,13 +1,38 @@
+import 'package:floot_calculator_flutter/models/measurement.dart';
 import 'package:floot_calculator_flutter/pages/calculator.dart';
 import 'package:floot_calculator_flutter/pages/projects.dart';
 import 'package:flutter/material.dart';
+import 'package:path/path.dart';
+import 'package:sqflite/sqflite.dart';
 
-void main() {
-  runApp(const MyApp());
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  final databaseFeature =
+      openDatabase(join(await getDatabasesPath(), "floor_planing.db"),
+          onCreate: (db, varsion) {
+    return db.execute("""create table measurements(
+      id INTEGER PRIMARY KEY AUTOINCREMENT, 
+      roomWidth INTEGER, 
+      roomLength INTEGER,
+      tileWidth INTEGER, 
+      tileLength INTEGER,
+      gapSize INTEGER, 
+      roomUnits VARCHAR(2) default 'm',
+      tileUnits VARCHAR(2) default 'm',
+      gapUnits VARCHAR(2) default 'mm'
+      )""");
+  }, version: 1);
+
+  var database = await databaseFeature;
+
+  runApp(MyApp(database: database));
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({Key? key}) : super(key: key);
+  Database database;
+
+  MyApp({Key? key, required this.database}) : super(key: key) {}
 
   // This widget is the root of your application.
   @override
@@ -19,10 +44,28 @@ class MyApp extends StatelessWidget {
             textTheme: const TextTheme(
                 bodyText2: TextStyle(fontSize: 15, color: Colors.grey)),
             primaryTextTheme: Typography.blackRedmond),
+        initialRoute: "/projects",
         routes: {
-          '/': (context) => CalculatorPage(),
-          '/projects': (context) => ProjectsPage()
+          '/': (context) =>
+              CalculatorPage(onSaveMeasurement: onSaveMeasurement(context)),
+          '/projects': (context) => ProjectsPage(data: getSavedMeasurements())
         });
+  }
+
+  onSaveMeasurement(BuildContext context) => (Measurement data) async {
+        var status = await database.insert('measurements', data.toMap());
+        Navigator.pushNamed(context, "/projects");
+      };
+
+  Future<List<Measurement>> getSavedMeasurements() async {
+    var data = await database.query("measurements");
+    List<Measurement> measurementData = [];
+
+    data.forEach((entry) {
+      measurementData.add(Measurement().fromJSON(entry));
+    });
+
+    return measurementData;
   }
 }
 

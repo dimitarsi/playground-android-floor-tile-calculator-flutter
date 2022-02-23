@@ -1,12 +1,15 @@
 import 'dart:math';
+import 'package:floot_calculator_flutter/models/measurement.dart';
 import 'package:flutter/material.dart';
 
 class CalculatorPage extends StatefulWidget {
-  CalculatorPage({key}) : super(key: key);
+  void Function(Measurement data)? onSaveMeasurement;
+
+  CalculatorPage({key, this.onSaveMeasurement}) : super(key: key);
 
   @override
   State<StatefulWidget> createState() {
-    return CalculatorPageState();
+    return CalculatorPageState(onSaveMeasurement: onSaveMeasurement);
   }
 }
 
@@ -15,8 +18,9 @@ class CalculatorPageState extends State<CalculatorPage> {
   Map<int, Widget Function()> viewByStep = {};
   Map<String, TextEditingController> controllers = {};
   Map<String, String?> textErrors = {};
+  void Function(Measurement data)? onSaveMeasurement;
 
-  CalculatorPageState() {
+  CalculatorPageState({this.onSaveMeasurement}) {
     viewByStep = {
       1: _stepOneRoomSize,
       2: _stepTwoTileSize,
@@ -29,7 +33,6 @@ class CalculatorPageState extends State<CalculatorPage> {
     controllers['tileLength'] = TextEditingController();
     controllers['gapSize'] = TextEditingController();
   }
-  final _formKey = GlobalKey<FormState>();
   final EdgeInsets _pagePadding = const EdgeInsets.only(left: 20, right: 20);
 
   @override
@@ -37,19 +40,17 @@ class CalculatorPageState extends State<CalculatorPage> {
     var currentStep = viewByStep[step]!;
 
     return Scaffold(
-      body: Form(
-          key: _formKey,
-          child: Container(
-              padding: _pagePadding,
-              child: IndexedStack(
-                index: step - 1,
-                children: [
-                  viewByStep[1]!(),
-                  viewByStep[2]!(),
-                  viewByStep[3]!(),
-                  viewByStep[4]!()
-                ],
-              ))),
+      body: Container(
+          padding: _pagePadding,
+          child: IndexedStack(
+            index: step - 1,
+            children: [
+              viewByStep[1]!(),
+              viewByStep[2]!(),
+              viewByStep[3]!(),
+              viewByStep[4]!()
+            ],
+          )),
     );
   }
 
@@ -198,7 +199,7 @@ class CalculatorPageState extends State<CalculatorPage> {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           TextButton(onPressed: startNew, child: const Text("New")),
-          TextButton(onPressed: goToPrev(), child: const Text("Save"))
+          TextButton(onPressed: trySaveMeasurement, child: const Text("Save"))
         ],
       );
     }
@@ -270,5 +271,18 @@ class CalculatorPageState extends State<CalculatorPage> {
     }
 
     return null;
+  }
+
+  int getSizeOrDefault(String controllerName) {
+    return int.tryParse(controllers["roomWidth"]?.text ?? "") ?? 0;
+  }
+
+  trySaveMeasurement() {
+    onSaveMeasurement?.call(Measurement(
+        roomWidth: getSizeOrDefault("roomWidth"),
+        roomLength: getSizeOrDefault("roomLength"),
+        tileWidth: getSizeOrDefault("tileWidth"),
+        tileLength: getSizeOrDefault("tileLength"),
+        gapSize: getSizeOrDefault("gapSize")));
   }
 }
