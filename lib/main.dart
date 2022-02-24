@@ -44,7 +44,6 @@ class MyApp extends StatelessWidget {
             textTheme: const TextTheme(
                 bodyText2: TextStyle(fontSize: 15, color: Colors.grey)),
             primaryTextTheme: Typography.blackRedmond),
-        initialRoute: "/projects",
         routes: {
           '/': (context) =>
               CalculatorPage(onSaveMeasurement: onSaveMeasurement(context)),

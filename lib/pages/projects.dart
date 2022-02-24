@@ -1,3 +1,4 @@
+import 'package:floot_calculator_flutter/components/custom_drawer.dart';
 import 'package:floot_calculator_flutter/models/measurement.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -30,7 +31,14 @@ class ProjectsPageState extends State<ProjectsPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(body: body(context));
+    return Scaffold(
+      body: body(context),
+      appBar: AppBar(),
+      drawer: CustomDrawer(
+        key: const Key("projects"),
+        currentPage: "/projects",
+      ),
+    );
   }
 
   Widget body(context) {
@@ -57,11 +65,6 @@ class ProjectsPageState extends State<ProjectsPage> {
       SizedBox(
         height: 80,
       ),
-      TextButton(
-          onPressed: () {
-            Navigator.pushNamed(context, "/");
-          },
-          child: Text("Home")),
       Expanded(
           child: ListView.builder(
               itemCount: data.length,

@@ -1,4 +1,5 @@
 import 'dart:math';
+import 'package:floot_calculator_flutter/components/custom_drawer.dart';
 import 'package:floot_calculator_flutter/models/measurement.dart';
 import 'package:flutter/material.dart';
 
@@ -40,6 +41,11 @@ class CalculatorPageState extends State<CalculatorPage> {
     var currentStep = viewByStep[step]!;
 
     return Scaffold(
+      drawer: CustomDrawer(
+        key: const Key("calculator"),
+        currentPage: "/",
+      ),
+      appBar: AppBar(),
       body: Container(
           padding: _pagePadding,
           child: IndexedStack(
