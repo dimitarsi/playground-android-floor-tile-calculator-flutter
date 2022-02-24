@@ -1,6 +1,7 @@
 import 'dart:math';
 import 'package:floot_calculator_flutter/components/custom_drawer.dart';
 import 'package:floot_calculator_flutter/models/measurement.dart';
+import 'package:floot_calculator_flutter/painter/room_painter.dart';
 import 'package:flutter/material.dart';
 
 class CalculatorPage extends StatefulWidget {
@@ -20,6 +21,8 @@ class CalculatorPageState extends State<CalculatorPage> {
   Map<String, TextEditingController> controllers = {};
   Map<String, String?> textErrors = {};
   void Function(Measurement data)? onSaveMeasurement;
+
+  RoomPainter _roomPainter = RoomPainter(sideA: 1, sideB: 1);
 
   CalculatorPageState({this.onSaveMeasurement}) {
     viewByStep = {
@@ -82,10 +85,27 @@ class CalculatorPageState extends State<CalculatorPage> {
     );
   }
 
+  RoomPainter getRoomPainter() {
+    int sideA = int.tryParse(controllers['roomWidth']?.text ?? '1') ?? 1;
+    int sideB = int.tryParse(controllers['roomLength']?.text ?? '1') ?? 1;
+
+    return RoomPainter(sideA: sideA, sideB: sideB);
+  }
+
   Widget _stepOneRoomSize() {
-    return Column(
+    return ListView(
       children: [
-        const SizedBox(height: 80),
+        const SizedBox(height: 10),
+        Align(
+          child: SizedBox(
+              height: 300,
+              width: 300,
+              child: Container(
+                decoration: BoxDecoration(
+                    border: Border.all(width: 2, color: Colors.red)),
+                child: CustomPaint(size: Size(300, 300), painter: _roomPainter),
+              )),
+        ),
         TextFormField(
           key: Key("roomWidth"),
           controller: controllers["roomWidth"],
@@ -93,6 +113,9 @@ class CalculatorPageState extends State<CalculatorPage> {
           keyboardType: TextInputType.number,
           decoration: InputDecoration(
               label: Text("Room Width"), errorText: getErrorText("roomWidth")),
+          onEditingComplete: () => setState(() {
+            _roomPainter = getRoomPainter();
+          }),
         ),
         TextFormField(
           key: Key("roomLength"),
@@ -102,6 +125,11 @@ class CalculatorPageState extends State<CalculatorPage> {
           decoration: InputDecoration(
               label: Text("Room Length"),
               errorText: getErrorText("roomLength")),
+          onEditingComplete: () {
+            setState(() {
+              _roomPainter = getRoomPainter();
+            });
+          },
         ),
         _renderButtonRows()
       ],
