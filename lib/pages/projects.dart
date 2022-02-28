@@ -33,7 +33,7 @@ class ProjectsPageState extends State<ProjectsPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: body(context),
-      appBar: AppBar(),
+      appBar: AppBar(title: Text("Projects")),
       drawer: CustomDrawer(
         key: const Key("projects"),
         currentPage: "/projects",

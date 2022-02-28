@@ -43,12 +43,18 @@ class CalculatorPageState extends State<CalculatorPage> {
   Widget build(BuildContext context) {
     var currentStep = viewByStep[step]!;
 
+    if (_roomPainter == null) {
+      _roomPainter = getRoomPainter(context);
+    }
+
     return Scaffold(
       drawer: CustomDrawer(
         key: const Key("calculator"),
         currentPage: "/",
       ),
-      appBar: AppBar(),
+      appBar: AppBar(
+        title: Text("Calculator"),
+      ),
       body: Container(
           padding: _pagePadding,
           child: IndexedStack(
@@ -85,32 +91,36 @@ class CalculatorPageState extends State<CalculatorPage> {
     );
   }
 
-  RoomPainter getRoomPainter() {
+  RoomPainter getRoomPainter(BuildContext context) {
     int sideA = int.tryParse(controllers['roomWidth']?.text ?? '1') ?? 1;
     int sideB = int.tryParse(controllers['roomLength']?.text ?? '1') ?? 1;
     var canvasTextStyle = Theme.of(context)
         .primaryTextTheme
         .bodyText1!
         .merge(TextStyle(color: Colors.black));
-    return RoomPainter(sideA: sideA, sideB: sideB, style: canvasTextStyle);
+    var width = MediaQuery.of(context).size.width -
+        _pagePadding.left -
+        _pagePadding.right;
+    return RoomPainter(
+        sideA: sideA,
+        sideB: sideB,
+        style: canvasTextStyle,
+        canvasWidth: width.toInt());
   }
 
   Widget _stepOneRoomSize() {
+    var width = MediaQuery.of(context).size.width -
+        _pagePadding.left -
+        _pagePadding.right;
     return ListView(
       children: [
         const SizedBox(height: 10),
         Align(
-          child: SizedBox(
-              height: 300,
-              width: 300,
-              child: Container(
-                decoration: const BoxDecoration(
-                    // color: Colors.pink,
-                    // border: Border.all(width: 2, color: Colors.red)
-                    ),
-                child: CustomPaint(size: Size(300, 300), painter: _roomPainter),
-              )),
-        ),
+            child: SizedBox(
+          height: 350,
+          width: width,
+          child: CustomPaint(size: Size(width, 350), painter: _roomPainter),
+        )),
         TextFormField(
           key: Key("roomWidth"),
           controller: controllers["roomWidth"],
@@ -119,7 +129,7 @@ class CalculatorPageState extends State<CalculatorPage> {
           decoration: InputDecoration(
               label: Text("Room Width"), errorText: getErrorText("roomWidth")),
           onEditingComplete: () => setState(() {
-            _roomPainter = getRoomPainter();
+            _roomPainter = getRoomPainter(context);
             FocusManager.instance.primaryFocus?.unfocus();
           }),
         ),
@@ -133,7 +143,7 @@ class CalculatorPageState extends State<CalculatorPage> {
               errorText: getErrorText("roomLength")),
           onEditingComplete: () {
             setState(() {
-              _roomPainter = getRoomPainter();
+              _roomPainter = getRoomPainter(context);
               FocusManager.instance.primaryFocus?.unfocus();
             });
           },

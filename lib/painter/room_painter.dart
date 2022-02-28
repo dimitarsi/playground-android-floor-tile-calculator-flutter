@@ -12,24 +12,18 @@ class RoomPainter extends CustomPainter {
   // int shortSideA;
   // int shortSideB;
 
-  int canvasSize = 300;
+  int canvasHeight = 300;
+  int canvasWidth;
   TextStyle style;
 
-  RoomPainter({required this.sideA, required this.sideB, required this.style});
+  RoomPainter(
+      {required this.sideA,
+      required this.sideB,
+      required this.style,
+      required this.canvasWidth});
 
   @override
   void paint(Canvas canvas, Size size) {
-    // // var rect = Rect.fromCenter(center: Offset.zero, width: 10, height: 10);
-    // var rect = Rect.fromCenter(
-    //     center: Offset.fromDirection(pi / 180 * 45, sqrt(300 * 300 / 2)),
-    //     width: 10,
-    //     height: 10);
-
-    // var paint = Paint()
-    //   ..color = Colors.teal
-    //   ..strokeWidth = 15;
-
-    // canvas.drawRect(rect, paint);
     var paint = Paint()
       ..color = Colors.black
       ..strokeWidth = 3;
@@ -47,10 +41,10 @@ class RoomPainter extends CustomPainter {
 
     doorLength = min(doorLength, scaledSideA * .5);
 
-    var leftStart = (canvasSize - scaledSideA) * .5;
+    var leftStart = (canvasWidth - scaledSideA) * .5;
     var leftEnd = leftStart + scaledSideA;
 
-    var topStart = (canvasSize - scaledSideB) * .5;
+    var topStart = (canvasHeight - scaledSideB) * .5;
     var topEnd = topStart + scaledSideB;
 
     // Drawing 3 complete walls
@@ -100,17 +94,18 @@ class RoomPainter extends CustomPainter {
     canvas.drawLine(Offset(leftStart - 15, topEnd + 40),
         Offset(leftEnd + 15, topEnd + 40), guideLines);
 
-    var pc = ParagraphConstraints(width: 300);
+    var pcVertical = ParagraphConstraints(width: canvasHeight.toDouble());
+    var pcHorizontal = ParagraphConstraints(width: canvasWidth.toDouble());
     var pb =
         ParagraphBuilder(style.getParagraphStyle(textAlign: TextAlign.center));
     // Draw labels - vertical
     pb.pushStyle(style.getTextStyle());
     pb.addText("$sideB mm");
     var text = pb.build();
-    text.layout(pc);
+    text.layout(pcVertical);
 
     canvas.save();
-    canvas.translate(leftStart - 35, 300);
+    canvas.translate(leftStart - 35, canvasHeight.toDouble());
     canvas.rotate(pi * -0.5); // 90deg
     canvas.drawParagraph(text, Offset(0, 0));
 
@@ -123,7 +118,7 @@ class RoomPainter extends CustomPainter {
     pb2.addText("$sideA mm");
 
     text = pb2.build();
-    text.layout(pc);
+    text.layout(pcHorizontal);
 
     // Draw labels - horizontal
     canvas.drawParagraph(text, Offset(0, topEnd + 45));
