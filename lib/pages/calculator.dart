@@ -22,7 +22,7 @@ class CalculatorPageState extends State<CalculatorPage> {
   Map<String, String?> textErrors = {};
   void Function(Measurement data)? onSaveMeasurement;
 
-  RoomPainter _roomPainter = RoomPainter(sideA: 1, sideB: 1);
+  RoomPainter? _roomPainter;
 
   CalculatorPageState({this.onSaveMeasurement}) {
     viewByStep = {
@@ -88,8 +88,11 @@ class CalculatorPageState extends State<CalculatorPage> {
   RoomPainter getRoomPainter() {
     int sideA = int.tryParse(controllers['roomWidth']?.text ?? '1') ?? 1;
     int sideB = int.tryParse(controllers['roomLength']?.text ?? '1') ?? 1;
-
-    return RoomPainter(sideA: sideA, sideB: sideB);
+    var canvasTextStyle = Theme.of(context)
+        .primaryTextTheme
+        .bodyText1!
+        .merge(TextStyle(color: Colors.black));
+    return RoomPainter(sideA: sideA, sideB: sideB, style: canvasTextStyle);
   }
 
   Widget _stepOneRoomSize() {
@@ -101,8 +104,10 @@ class CalculatorPageState extends State<CalculatorPage> {
               height: 300,
               width: 300,
               child: Container(
-                decoration: BoxDecoration(
-                    border: Border.all(width: 2, color: Colors.red)),
+                decoration: const BoxDecoration(
+                    // color: Colors.pink,
+                    // border: Border.all(width: 2, color: Colors.red)
+                    ),
                 child: CustomPaint(size: Size(300, 300), painter: _roomPainter),
               )),
         ),
@@ -115,6 +120,7 @@ class CalculatorPageState extends State<CalculatorPage> {
               label: Text("Room Width"), errorText: getErrorText("roomWidth")),
           onEditingComplete: () => setState(() {
             _roomPainter = getRoomPainter();
+            FocusManager.instance.primaryFocus?.unfocus();
           }),
         ),
         TextFormField(
@@ -128,6 +134,7 @@ class CalculatorPageState extends State<CalculatorPage> {
           onEditingComplete: () {
             setState(() {
               _roomPainter = getRoomPainter();
+              FocusManager.instance.primaryFocus?.unfocus();
             });
           },
         ),

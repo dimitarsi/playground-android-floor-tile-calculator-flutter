@@ -30,9 +30,9 @@ void main() async {
 }
 
 class MyApp extends StatelessWidget {
-  Database database;
+  Database? database;
 
-  MyApp({Key? key, required this.database}) : super(key: key) {}
+  MyApp({Key? key, required this.database}) : super(key: key);
 
   // This widget is the root of your application.
   @override
@@ -52,17 +52,22 @@ class MyApp extends StatelessWidget {
   }
 
   onSaveMeasurement(BuildContext context) => (Measurement data) async {
-        var status = await database.insert('measurements', data.toMap());
-        Navigator.pushNamed(context, "/projects");
+        if (database != null) {
+          await database?.insert('measurements', data.toMap());
+          // TODO: handle error
+          Navigator.pushNamed(context, "/projects");
+        }
       };
 
   Future<List<Measurement>> getSavedMeasurements() async {
-    var data = await database.query("measurements");
+    var data = await database?.query("measurements");
     List<Measurement> measurementData = [];
 
-    data.forEach((entry) {
-      measurementData.add(Measurement().fromJSON(entry));
-    });
+    if (data != null) {
+      for (var entry in data) {
+        measurementData.add(Measurement().fromJSON(entry));
+      }
+    }
 
     return measurementData;
   }

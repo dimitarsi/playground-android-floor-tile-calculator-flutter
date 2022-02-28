@@ -1,6 +1,10 @@
+import 'dart:ui';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'dart:math';
+
+import 'package:path/path.dart';
 
 class RoomPainter extends CustomPainter {
   int sideA;
@@ -9,8 +13,9 @@ class RoomPainter extends CustomPainter {
   // int shortSideB;
 
   int canvasSize = 300;
+  TextStyle style;
 
-  RoomPainter({required this.sideA, required this.sideB});
+  RoomPainter({required this.sideA, required this.sideB, required this.style});
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -27,7 +32,11 @@ class RoomPainter extends CustomPainter {
     // canvas.drawRect(rect, paint);
     var paint = Paint()
       ..color = Colors.black
-      ..strokeWidth = 5;
+      ..strokeWidth = 3;
+
+    var guideLines = Paint()
+      ..color = Colors.black
+      ..strokeWidth = 1;
 
     int maxSizeWidth = 250;
     double scaling = min(maxSizeWidth / sideB, maxSizeWidth / sideA);
@@ -35,6 +44,8 @@ class RoomPainter extends CustomPainter {
 
     var scaledSideA = sideA * scaling;
     var scaledSideB = sideB * scaling;
+
+    doorLength = min(doorLength, scaledSideA * .5);
 
     var leftStart = (canvasSize - scaledSideA) * .5;
     var leftEnd = leftStart + scaledSideA;
@@ -54,6 +65,68 @@ class RoomPainter extends CustomPainter {
         Offset(leftEnd, topStart + (scaledSideB - doorLength) * .5), paint);
     canvas.drawLine(Offset(leftEnd, topEnd - (scaledSideB - doorLength) * .5),
         Offset(leftEnd, topEnd), paint);
+
+    // Guidelines
+    canvas.drawLine(Offset(leftStart, topEnd + 10),
+        Offset(leftStart, topEnd + 50), guideLines);
+    canvas.drawLine(
+        Offset(leftEnd, topEnd + 10), Offset(leftEnd, topEnd + 50), guideLines);
+
+    canvas.drawLine(Offset(leftStart - 10, topStart),
+        Offset(leftStart - 50, topStart), guideLines);
+
+    canvas.drawLine(Offset(leftStart - 10, topEnd),
+        Offset(leftStart - 50, topEnd), guideLines);
+
+    // Diagonal (small) decoration guidelines
+
+    canvas.drawLine(Offset(leftStart - 35, topStart - 5),
+        Offset(leftStart - 45, topStart + 5), guideLines);
+
+    canvas.drawLine(Offset(leftStart - 35, topEnd - 5),
+        Offset(leftStart - 45, topEnd + 5), guideLines);
+
+    canvas.drawLine(Offset(leftStart + 5, topEnd + 35),
+        Offset(leftStart - 5, topEnd + 45), guideLines);
+
+    canvas.drawLine(Offset(leftEnd + 5, topEnd + 35),
+        Offset(leftEnd - 5, topEnd + 45), guideLines);
+
+    // Connecting guidelines - vertical
+    canvas.drawLine(Offset(leftStart - 40, topStart - 15),
+        Offset(leftStart - 40, topEnd + 15), guideLines);
+
+    // Connecting guidelines - horizontal
+    canvas.drawLine(Offset(leftStart - 15, topEnd + 40),
+        Offset(leftEnd + 15, topEnd + 40), guideLines);
+
+    var pc = ParagraphConstraints(width: 300);
+    var pb =
+        ParagraphBuilder(style.getParagraphStyle(textAlign: TextAlign.center));
+    // Draw labels - vertical
+    pb.pushStyle(style.getTextStyle());
+    pb.addText("$sideB mm");
+    var text = pb.build();
+    text.layout(pc);
+
+    canvas.save();
+    canvas.translate(leftStart - 35, 300);
+    canvas.rotate(pi * -0.5); // 90deg
+    canvas.drawParagraph(text, Offset(0, 0));
+
+    canvas.restore();
+
+    var pb2 =
+        ParagraphBuilder(style.getParagraphStyle(textAlign: TextAlign.center));
+
+    pb2.pushStyle(style.getTextStyle());
+    pb2.addText("$sideA mm");
+
+    text = pb2.build();
+    text.layout(pc);
+
+    // Draw labels - horizontal
+    canvas.drawParagraph(text, Offset(0, topEnd + 45));
   }
 
   @override
