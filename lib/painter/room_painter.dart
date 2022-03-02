@@ -6,6 +6,10 @@ import 'dart:math';
 
 import 'package:path/path.dart';
 
+num abs(num val) {
+  return val < 0 ? -val : val;
+}
+
 class RoomOffset {
   double leftStart;
   double leftEnd;
@@ -136,6 +140,7 @@ class RoomPainter extends CustomPainter {
 
   void _drawOuterWalls(Canvas canvas, Paint paint) {
     var offset = getRoomOffset();
+    // TODO: use drawPoints instead
     canvas.drawLine(offset.topRight, offset.topLeft, paint);
     canvas.drawLine(offset.topLeft, offset.bottomLeft, paint);
     canvas.drawLine(offset.bottomLeft, offset.bottomRight, paint);
@@ -144,6 +149,7 @@ class RoomPainter extends CustomPainter {
   void _drawInnerWalls(Canvas canvas, Paint paint) {
     var offset = getRoomOffset();
     offset.innerOffset = 10;
+    // TODO: use drawPoints instead
     canvas.drawLine(offset.topInnerRight, offset.topInnerLeft, paint);
     canvas.drawLine(offset.topInnerLeft, offset.bottomInnerLeft, paint);
     canvas.drawLine(offset.bottomInnerLeft, offset.bottomInnerRight, paint);
@@ -153,6 +159,7 @@ class RoomPainter extends CustomPainter {
     var offset = getRoomOffset();
     var doorLength = getDoorLength();
     var scaledSideB = getScaledSideB();
+    // TODO: use drawPoints instead
     // Drawing 4 wall with space for the door
     canvas.drawLine(
         offset.topRight,
@@ -173,7 +180,7 @@ class RoomPainter extends CustomPainter {
     // Drawing 4 wall with space for the door
     var doorTopStart = offset.topStart + (scaledSideB - doorLength) * .5;
     var doorTopEnd = offset.topEnd - (scaledSideB - doorLength) * .5;
-
+    // TODO: use drawPoints instead
     canvas.drawLine(
         offset.topInnerRight, Offset(offset.leftInnerEnd, doorTopStart), paint);
     canvas.drawLine(Offset(offset.leftInnerEnd, doorTopEnd),
@@ -188,7 +195,7 @@ class RoomPainter extends CustomPainter {
 
     var doorTopStart = offset.topStart + (scaledSideB - doorLength) * .5;
     var doorTopEnd = offset.topEnd - (scaledSideB - doorLength) * .5;
-
+    // TODO: use drawPoints instead
     canvas.drawLine(Offset(offset.leftInnerEnd, doorTopStart),
         Offset(offset.leftEnd, doorTopStart), paint);
 
@@ -196,7 +203,7 @@ class RoomPainter extends CustomPainter {
         Offset(offset.leftEnd, doorTopEnd), paint);
   }
 
-  void _drawDoort(Canvas canvas, Paint paint) {
+  void _drawDoor(Canvas canvas, Paint paint) {
     var offset = getRoomOffset();
     var doorLength = getDoorLength();
     var scaledSideB = getScaledSideB();
@@ -205,22 +212,28 @@ class RoomPainter extends CustomPainter {
     var doorTopStart = offset.topStart + (scaledSideB - doorLength) * .5;
     var doorTopEnd = offset.topEnd - (scaledSideB - doorLength) * .5;
 
-    // canvas.drawLine(Offset(offset.leftInnerEnd, doorTopStart),
-    //     Offset(offset.leftEnd, doorTopStart), paint);
-
-    // canvas.drawLine(Offset(offset.leftInnerEnd, doorTopEnd),
-    //     Offset(offset.leftEnd, doorTopEnd), paint);
-
     var closedDoorPaint = Paint()
       ..color = Colors.grey
-      ..strokeWidth = 1;
+      ..strokeWidth = 2;
 
+    var doorSweepAnglePaint = Paint()
+      ..color = Colors.grey
+      ..strokeWidth = 1
+      ..style = PaintingStyle.stroke;
+
+    var doorAngle = pi * -0.15;
+    // TODO: use drawPoints instead
     canvas.save();
     canvas.translate(offset.leftEnd, doorTopStart); // door pivot point
     canvas.drawLine(Offset(-offset.innerOffset, 0),
         Offset(-offset.innerOffset, doorLength), closedDoorPaint);
-    canvas.rotate(pi * -.05); //9 deg,
+
+    canvas.save();
+    canvas.rotate(doorAngle); //9 deg,
     canvas.drawLine(Offset(0, 0), Offset(0, doorLength), paint);
+    canvas.restore();
+    canvas.drawArc(Rect.fromCircle(center: Offset.zero, radius: doorLength),
+        pi * .5, doorAngle, false, doorSweepAnglePaint);
 
     canvas.restore();
   }
@@ -255,7 +268,7 @@ class RoomPainter extends CustomPainter {
     _drawRightWall(canvas, paint);
     _drawRightInnerWall(canvas, paint);
     _drawConnectInnerWalls(canvas, paint);
-    _drawDoort(canvas, paint);
+    _drawDoor(canvas, paint);
 
     // Guidelines
     canvas.drawLine(Offset(leftStart, topEnd + 10),
