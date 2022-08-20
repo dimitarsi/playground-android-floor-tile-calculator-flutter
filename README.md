@@ -1,16 +1,18 @@
-# floot_calculator_flutter
+# Floor tile calculator - Free organizer for professional tilers
 
-A new Flutter project.
+Goal is to learn how to create flutter android/ios apps, with custom drawing and state management.
 
-## Getting Started
 
-This project is a starting point for a Flutter application.
+## Calculators first page
 
-A few resources to get you started if this is your first Flutter project:
+Enter room dimensions
 
-- [Lab: Write your first Flutter app](https://flutter.dev/docs/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://flutter.dev/docs/cookbook)
+![Room dimensions](./public/main-screen.JPG)
 
-For help getting started with Flutter, view our
-[online documentation](https://flutter.dev/docs), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## Dynamic drawing proportional to the input
+
+![Apply the dimensions](./public/room-redraw.JPG)
+
+## Data overview (wip)
+
+![Data Overview](./public/dimentions.JPG)
