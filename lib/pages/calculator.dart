@@ -2,6 +2,7 @@ import 'dart:math';
 import 'package:floot_calculator_flutter/components/custom_drawer.dart';
 import 'package:floot_calculator_flutter/models/measurement.dart';
 import 'package:floot_calculator_flutter/painter/room_painter.dart';
+import 'package:floot_calculator_flutter/painter/tile_painter.dart';
 import 'package:flutter/material.dart';
 
 class CalculatorPage extends StatefulWidget {
@@ -23,6 +24,7 @@ class CalculatorPageState extends State<CalculatorPage> {
   void Function(Measurement data)? onSaveMeasurement;
 
   RoomPainter? _roomPainter;
+  TilePainter? _tilePainter = TilePainter();
 
   CalculatorPageState({this.onSaveMeasurement}) {
     viewByStep = {
@@ -154,9 +156,19 @@ class CalculatorPageState extends State<CalculatorPage> {
   }
 
   Widget _stepTwoTileSize() {
-    return Column(
+    var width = MediaQuery.of(context).size.width -
+        _pagePadding.left -
+        _pagePadding.right;
+    return ListView(
       children: [
-        const SizedBox(height: 80),
+        const SizedBox(height: 10),
+        Align(
+          child: SizedBox(
+            height: 350,
+            width: width,
+            child: CustomPaint(size: Size(width, 350), painter: _tilePainter),
+          ),
+        ),
         TextFormField(
           key: Key("tileWidth"),
           controller: controllers["tileWidth"],
